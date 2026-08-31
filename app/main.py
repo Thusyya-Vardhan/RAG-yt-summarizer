@@ -6,9 +6,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import init_db, get_db
 from app.models import Video, Chunk
-from app.schemas import VideoIngestRequest, VideoStatusResponse
+from app.schemas import VideoIngestRequest, VideoStatusResponse, AskRequest, Source, AskResponse
 from app.services import youtube_service
 from app.services.ingestion_service import start_ingestion
+from app.services.retrieval_service import retrieve_relevant_chunks
+from app.services.generation_service import generate_answer
 
 
 @asynccontextmanager
@@ -71,4 +73,30 @@ async def get_video_status(video_id: str, db: AsyncSession = Depends(get_db)):
         status=video.status,
         error_message=video.error_message,
         chunk_count=count or 0,
+    )
+
+@app.post("/videos/{video_id}/ask", response_model=AskResponse)
+async def query_about_video(video_id: str, payload: AskRequest, db: AsyncSession = Depends(get_db)):
+    video = await db.get(Video, video_id)
+
+    if video is None :
+        raise HTTPException(status_code=404, detail="Video ingestion failed")
+
+    if video.status != "ready":
+        raise HTTPException(status_code=400, detail="video under processing")
+
+    chunks = await retrieve_relevant_chunks(db, video_id, payload.query)
+    answer = generate_answer(payload.query, chunks)
+
+    sources = []
+    for chunk in chunks:
+        sources.append(
+            Source(start_sec=chunk.start_sec,
+                    timestamp_url=f"https://youtube.com/watch?v={video_id}&t={int(chunk.start_sec)}s")
+        )
+
+
+    return AskResponse(
+        answer=answer,
+        sources= sources 
     )

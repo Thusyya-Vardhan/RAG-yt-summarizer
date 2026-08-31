@@ -16,3 +16,15 @@ class VideoStatusResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class AskRequest(BaseModel):
+    query : str
+
+class Source(BaseModel):
+    start_sec: float
+    timestamp_url: str
+
+class AskResponse(BaseModel):
+    answer: str
+    sources: list[Source]
