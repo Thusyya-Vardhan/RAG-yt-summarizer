@@ -12,7 +12,7 @@ def generate_answer(query: str, chunks: list[Chunk]) -> str:
         text += f"[{minutes}:{seconds}] {chunk.content}\n"
 
 
-    prompt = f"Answer the question using ONLY the transcript excerpts below. If the excerpts don't contain enough information to answer, say so.Transcript excerpts:{text} Question: {query}"
+    prompt = f"Interpret the users question naturally if the wording doesn't exactly match the transcript excerpts. You must not state the facts that aren't supported by transcript excerpts. Transcript excerpts:{text} and User Question: {query}"
 
     response = _client.models.generate_content(
         model=settings.generation_model,
