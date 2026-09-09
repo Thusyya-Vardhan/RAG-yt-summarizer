@@ -28,3 +28,6 @@ class Source(BaseModel):
 class AskResponse(BaseModel):
     answer: str
     sources: list[Source]
+
+class SummaryResponse(BaseModel):
+    answer: str

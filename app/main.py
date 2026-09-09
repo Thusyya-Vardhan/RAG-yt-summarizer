@@ -3,14 +3,17 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, BackgroundTasks, Depends, HTTPException
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
+from datetime import datetime, timezone
 
 from app.database import init_db, get_db
 from app.models import Video, Chunk
-from app.schemas import VideoIngestRequest, VideoStatusResponse, AskRequest, Source, AskResponse
+from app.schemas import VideoIngestRequest, VideoStatusResponse, AskRequest, Source, AskResponse, SummaryResponse
 from app.services import youtube_service
 from app.services.ingestion_service import start_ingestion
-from app.services.retrieval_service import retrieve_relevant_chunks
+from app.services.retrieval_service import retrieve_relevant_chunks , retrieve_all_chunks
 from app.services.generation_service import generate_answer
+from app.services.routing_service import route_query
+from app.services.summarization_service import summarize_all_chunks, final_summary_answer
 
 
 @asynccontextmanager
@@ -75,28 +78,47 @@ async def get_video_status(video_id: str, db: AsyncSession = Depends(get_db)):
         chunk_count=count or 0,
     )
 
-@app.post("/videos/{video_id}/ask", response_model=AskResponse)
+@app.post("/videos/{video_id}/ask", response_model=AskResponse | SummaryResponse)
 async def query_about_video(video_id: str, payload: AskRequest, db: AsyncSession = Depends(get_db)):
     video = await db.get(Video, video_id)
 
     if video is None :
-        raise HTTPException(status_code=404, detail="Video ingestion failed")
+        raise HTTPException(status_code=404, detail="Video Not Found")
 
     if video.status != "ready":
         raise HTTPException(status_code=400, detail="video under processing")
 
-    chunks = await retrieve_relevant_chunks(db, video_id, payload.query)
-    answer = generate_answer(payload.query, chunks)
+    route_type = route_query(payload.query)
 
-    sources = []
-    for chunk in chunks:
-        sources.append(
-            Source(start_sec=chunk.start_sec,
-                    timestamp_url=f"https://youtube.com/watch?v={video_id}&t={int(chunk.start_sec)}s")
+    if route_type == "summarize_video":
+        if video.summary_cache:
+            return SummaryResponse(
+                answer=video.summary_cache
+            )
+        chunks = await retrieve_all_chunks(db, video_id)
+        batch_summaries = summarize_all_chunks(chunks)
+        final = final_summary_answer(batch_summaries)
+
+        video.summary_cache = final
+        video.summary_generated_at = datetime.now(timezone.utc)
+
+        await db.commit()
+        return SummaryResponse(
+            answer= final
         )
+    else:
+        chunks = await retrieve_relevant_chunks(db, video_id, payload.query)
+        answer = generate_answer(payload.query, chunks)
+
+        sources = []
+        for chunk in chunks:
+            sources.append(
+                Source(start_sec=chunk.start_sec,
+                        timestamp_url=f"https://youtube.com/watch?v={video_id}&t={int(chunk.start_sec)}s")
+            )
 
 
-    return AskResponse(
-        answer=answer,
-        sources= sources 
-    )
+        return AskResponse(
+            answer=answer,
+            sources= sources 
+        )

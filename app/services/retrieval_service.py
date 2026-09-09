@@ -16,3 +16,15 @@ async def retrieve_relevant_chunks(db: AsyncSession, video_id:str, query:str, k:
     chunks = result.scalars().all()
 
     return chunks
+
+async def retrieve_all_chunks(db: AsyncSession, video_id:str) -> list[Chunk]:
+    stmt = (
+        select(Chunk)
+            .where(Chunk.video_id == video_id)
+            .order_by(Chunk.chunk_index)
+    )
+
+    result = await db.execute(stmt)
+    chunks = result.scalars().all()
+
+    return chunks
