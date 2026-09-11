@@ -4,7 +4,7 @@ from app.models import Chunk
 from app.services.embedding_service import embed_query
 
 async def retrieve_relevant_chunks(db: AsyncSession, video_id:str, query:str, k:int =5) -> list[Chunk]:
-    query_vector = embed_query(query)
+    query_vector = await embed_query(query)
     stmt = (
         select(Chunk)
          .where(Chunk.video_id == video_id)

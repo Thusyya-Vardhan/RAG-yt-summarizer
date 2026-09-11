@@ -24,7 +24,7 @@ async def start_ingestion(video_id:str, url:str) -> None:
             if not timestamped_chunks:
                 raise ValueError("Transcript produced zero chunks")
 
-            embeddings = embedding_service.embed_texts([c.content for c in timestamped_chunks])
+            embeddings = await embedding_service.embed_texts([c.content for c in timestamped_chunks])
 
             for tc , vector in zip(timestamped_chunks, embeddings):
                 db.add(

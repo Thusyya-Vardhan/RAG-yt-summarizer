@@ -27,8 +27,8 @@ summarize_video_fn = types.FunctionDeclaration(
 
 tool = types.Tool(function_declarations=[answer_question_fn, summarize_video_fn])
 
-def route_query(query: str) -> str:
-    response = _client.models.generate_content(
+async def route_query(query: str) -> str:
+    response = await _client.aio.models.generate_content(
         model = settings.generation_model,
         contents = query,
         config = types.GenerateContentConfig(tools=[tool],temperature=0)

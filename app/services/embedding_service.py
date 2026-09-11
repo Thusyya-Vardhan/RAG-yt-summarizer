@@ -11,7 +11,7 @@ def _chunked(items: list, size: int):
         yield items[i : i + size]
 
 
-def embed_texts(texts: list[str]) -> list[list[float]]:
+async def embed_texts(texts: list[str]) -> list[list[float]]:
     """
     Embeds a list of chunk texts in batches (settings.embedding_batch_size
     per call) rather than one API call per chunk. A 2hr video can produce
@@ -34,7 +34,7 @@ def embed_texts(texts: list[str]) -> list[list[float]]:
     all_embeddings: list[list[float]] = []
 
     for batch in _chunked(texts, settings.embedding_batch_size):
-        response = _client.models.embed_content(
+        response = await _client.aio.models.embed_content(
             model=settings.embedding_model,
             contents=batch,
             config=types.EmbedContentConfig(
@@ -47,7 +47,7 @@ def embed_texts(texts: list[str]) -> list[list[float]]:
     return all_embeddings
 
 
-def embed_query(text: str) -> list[float]:
+async def embed_query(text: str) -> list[float]:
     """
     Single-text embedding path for user queries at retrieval time.
     task_type=RETRIEVAL_QUERY (not RETRIEVAL_DOCUMENT) - this asymmetry
@@ -55,7 +55,7 @@ def embed_query(text: str) -> list[float]:
     queries and documents get embedded slightly differently even though
     they land in the same vector space.
     """
-    response = _client.models.embed_content(
+    response = await _client.aio.models.embed_content(
         model=settings.embedding_model,
         contents=[text],
         config=types.EmbedContentConfig(
