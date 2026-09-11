@@ -2,6 +2,10 @@
 
 > **CuePoint** is an end-to-end full-stack AI system that transforms any YouTube video into an interactive, grounded knowledge base. Ask targeted questions with verbatim transcript citations and clickable timestamp links, or generate comprehensive structured summaries using hierarchical map-reduce.
 
+🌐 **Live Demo**: [https://rag-yt-summarizer.vercel.app](https://rag-yt-summarizer.vercel.app/)  
+⚡ **Backend API**: [https://rag-yt-summarizer.onrender.com/docs](https://rag-yt-summarizer.onrender.com/docs)  
+📦 **Repository**: [https://github.com/Thusyya-Vardhan/RAG-yt-summarizer](https://github.com/Thusyya-Vardhan/RAG-yt-summarizer)
+
 ---
 
 ## ✨ Key Features
@@ -34,18 +38,19 @@
 
 | Layer | Technology | Purpose |
 | :--- | :--- | :--- |
-| **Backend** | Python 3.10+, FastAPI, Uvicorn | High-throughput asynchronous REST API & background tasks |
+| **Backend** | Python 3.12, FastAPI, Uvicorn | High-throughput asynchronous REST API & background tasks |
 | **Database** | PostgreSQL + pgvector, SQLAlchemy 2.0 | Relational video metadata & HNSW cosine distance vector indexing |
 | **AI / LLMs** | Google GenAI SDK (`google-genai`) | Asymmetric embeddings, intent function calling, synthesis |
 | **Transcript**| `youtube-transcript-api` | Direct caption extraction and timestamp synchronization |
 | **Frontend** | React 19, Vite, Vanilla CSS | Single-page 2-screen utility UI with custom hooks and zero UI packages |
+| **Deployment**| Vercel (Frontend), Render (Backend) | Globally distributed frontend and cloud API container |
 
 ---
 
 ## 🚀 Quick Start
 
 ### 1. Prerequisites
-- Python 3.10+
+- Python 3.12+
 - Node.js 18+
 - PostgreSQL instance with the `pgvector` extension enabled
 - Google Gemini API Key ([Get one here](https://aistudio.google.com/))
@@ -53,8 +58,8 @@
 ### 2. Backend Setup
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/cuepoint.git
-cd cuepoint
+git clone https://github.com/Thusyya-Vardhan/RAG-yt-summarizer.git
+cd RAG-yt-summarizer
 
 # Activate virtual environment
 python -m venv myenv
@@ -80,7 +85,7 @@ cd frontend
 # Install dependencies
 npm install
 
-# Create frontend environment config
+# Create frontend environment config (or point to live backend)
 cat <<EOF > .env
 VITE_API_URL=http://localhost:8000
 EOF
@@ -127,4 +132,3 @@ Accepts a natural language question or summary request.
   ]
 }
 ```
-
