@@ -38,10 +38,10 @@ async def start_ingestion(video_id:str, url:str) -> None:
                     )
                 )
 
-                video.title= title
-                video.duration_sec = int(timestamped_chunks[-1].end_sec)
-                video.status = "ready"
-                await db.commit()
+            video.title= title
+            video.duration_sec = int(timestamped_chunks[-1].end_sec)
+            video.status = "ready"
+            await db.commit()
 
         except Exception as exc:
             await db.rollback()
