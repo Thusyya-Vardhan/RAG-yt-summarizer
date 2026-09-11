@@ -31,7 +31,7 @@ def route_query(query: str) -> str:
     response = _client.models.generate_content(
         model = settings.generation_model,
         contents = query,
-        config = types.GenerateContentConfig(tools=[tool])
+        config = types.GenerateContentConfig(tools=[tool],temperature=0)
     )
 
     if response.candidates:

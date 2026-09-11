@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, BackgroundTasks, Depends, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime, timezone
@@ -15,15 +16,19 @@ from app.services.generation_service import generate_answer
 from app.services.routing_service import route_query
 from app.services.summarization_service import summarize_all_chunks, final_summary_answer
 
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_db()
     yield
 
-
 app = FastAPI(title="YT RAG Summarizer", lifespan=lifespan)
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.post("/videos", response_model=VideoStatusResponse)
 async def ingest_video(
