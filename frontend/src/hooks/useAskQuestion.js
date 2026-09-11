@@ -6,10 +6,12 @@ export function useAskQuestion() {
     const [sources, setSources] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [lastQuery, setLastQuery] = useState("");
 
     async function ask(video_id, query) {
         setLoading(true);
         setError(null);
+        setLastQuery(query);
         try {
             const response = await askQuestion(video_id, query);
             setAnswer(response.answer);
@@ -21,5 +23,5 @@ export function useAskQuestion() {
         }
     }
 
-    return { answer, sources, loading, error, ask };
+    return { answer, sources, loading, error, ask, lastQuery };
 }

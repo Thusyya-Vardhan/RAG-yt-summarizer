@@ -9,8 +9,9 @@ export function useVideoIngestion(){
 
     async function submit(url){
         try{
-        const response = await ingestVideo(url);
-        setVideo(response);
+            setError(null);
+            const response = await ingestVideo(url);
+            setVideo(response);
         }catch (err){
             setError(err.message);
         }    
@@ -20,9 +21,14 @@ export function useVideoIngestion(){
         if(!video || video.status === "ready" || video.status === "failed") return;
 
         const interval = setInterval(async () => {
-            const updated = await getVideoStatus(video.video_id);
-            setVideo(updated);
-        },3000);
+            try {
+                const updated = await getVideoStatus(video.video_id);
+                setVideo(updated);
+            } catch (err) {
+                // Keep polling or mark error if failed
+                console.error("Polling error:", err);
+            }
+        }, 2500);
 
         return () => clearInterval(interval);
     }, [video]);
