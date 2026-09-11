@@ -128,6 +128,6 @@ async def query_about_video(video_id: str, payload: AskRequest, db: AsyncSession
             sources= sources 
         )
 
-@app.get("/health")
+@app.get("/status")
 async def health_check():
     return {"status": "ok"}

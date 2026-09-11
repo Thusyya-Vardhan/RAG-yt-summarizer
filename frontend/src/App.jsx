@@ -24,7 +24,7 @@ export default function App() {
 
     const checkServer = async () => {
       try {
-        const response = await fetch(`${BASE_URL}/health`);
+        const response = await fetch(`${BASE_URL}/status`);
         if (response.ok) {
           setServerStatus("online");
           if (intervalId) clearInterval(intervalId);
