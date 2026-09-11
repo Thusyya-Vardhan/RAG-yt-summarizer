@@ -12,9 +12,9 @@
 
 - **🎯 Temporal Grounding & Timestamp Citations**: Answers are anchored directly to transcript excerpts with clickable timestamp badges (`▶ 03:24`) that jump directly to that exact second in the video.
 - **🧠 Intelligent Intent Routing**: Uses LLM function calling (`temperature=0`) to classify user intent, dynamically routing between targeted top-K vector search and whole-transcript map-reduce summarization.
-- **⚡ Parallel Map-Reduce Pipeline**: Summarizes long-form videos by concurrently processing transcript batches via `asyncio.gather()`, cutting generation time by up to 80%.
-- **💾 Automatic Summary Caching**: Stores verified video summaries in PostgreSQL so subsequent summary requests return instantly at zero LLM cost.
-- **📐 Matryoshka Truncatable Embeddings**: Leverages Gemini embeddings truncated from 3072 to 768 dimensions, slashing vector storage and index search overhead by 75% with zero perceptible loss in recall.
+- **⚡ Parallel Map-Reduce Pipeline**: Summarizes long-form videos by concurrently processing transcript batches via `asyncio.gather()`, executing chunk summaries in parallel rather than blocking on sequential LLM calls.
+- **💾 Automatic Summary Caching**: Stores generated video summaries in PostgreSQL so repeat summary queries can be served directly from cache without redundant model calls.
+- **📐 Matryoshka Truncatable Embeddings**: Uses Gemini's Matryoshka-supported truncation to reduce embedding dimensionality from 3072 to 768 dimensions, optimizing PostgreSQL vector storage and indexing while maintaining semantic retrieval precision.
 - **🎨 Modern Zero-Dependency UI**: A sleek, dark-slate 2-screen interface built with vanilla CSS, smooth micro-animations, and clean lifecycle state management.
 
 ---
