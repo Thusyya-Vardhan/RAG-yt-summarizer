@@ -19,7 +19,7 @@ export default function App() {
 
   useEffect(() => {
     let attempts = 0;
-    const maxAttempts = 25; // 25 attempts * 2.5s = ~60s total max wait
+    const maxAttempts = 50; // 50 attempts * 2.5s = 125s (~2 minutes total)
     let intervalId = null;
 
     const checkServer = async () => {
@@ -64,7 +64,7 @@ export default function App() {
             <span className={`status-dot ${serverStatus}`}></span>
             <span>
               {serverStatus === "online" && "Server Online"}
-              {serverStatus === "waking" && "Waking Server (~30s)"}
+              {serverStatus === "waking" && "Waking Server (~50-60s)"}
               {serverStatus === "checking" && "Connecting..."}
               {serverStatus === "error" && "Server Offline"}
             </span>
@@ -86,7 +86,7 @@ export default function App() {
               <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" />
             </svg>
             <span>
-              <strong>Cloud server is waking up:</strong> Render free-tier sleeps when idle. Initial boot takes ~30–40s — will be ready in a moment!
+              <strong>Cloud server is waking up:</strong> Render free-tier sleeps when idle. Initial boot takes ~50–60s — will be ready in a moment!
             </span>
           </div>
         )}
@@ -101,7 +101,7 @@ export default function App() {
             onReset={handleReset}
           />
         ) : (
-          <VideoUploadForm onVideoReady={handleVideoReady} />
+          <VideoUploadForm onVideoReady={handleVideoReady} serverStatus={serverStatus} />
         )}
       </main>
     </div>

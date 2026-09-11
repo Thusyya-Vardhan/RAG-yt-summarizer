@@ -1,16 +1,18 @@
 import { useState, useEffect } from "react";
 import { useVideoIngestion } from "../hooks/useVideoIngestion";
 
-export function VideoUploadForm({ onVideoReady }) {
+export function VideoUploadForm({ onVideoReady, serverStatus = "online" }) {
   const { video, error, submit } = useVideoIngestion();
   const [urlInput, setUrlInput] = useState("");
 
+  const isServerOnline = serverStatus === "online";
   const isProcessing = video && (video.status === "pending" || video.status === "processing");
+  const isSubmitDisabled = !urlInput.trim() || isProcessing || !isServerOnline;
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const trimmed = urlInput.trim();
-    if (!trimmed || isProcessing) return;
+    if (!trimmed || isProcessing || !isServerOnline) return;
     submit(trimmed);
   };
 
@@ -22,7 +24,7 @@ export function VideoUploadForm({ onVideoReady }) {
   }, [video, onVideoReady]);
 
   const handleRetry = () => {
-    if (urlInput.trim()) {
+    if (urlInput.trim() && isServerOnline) {
       submit(urlInput.trim());
     }
   };
@@ -41,7 +43,11 @@ export function VideoUploadForm({ onVideoReady }) {
             type="text"
             value={urlInput}
             onChange={(e) => setUrlInput(e.target.value)}
-            placeholder="Paste a YouTube URL (e.g. https://www.youtube.com/watch?v=...)"
+            placeholder={
+              !isServerOnline
+                ? "Paste a YouTube URL (will enable when server wakes)..."
+                : "Paste a YouTube URL (e.g. https://www.youtube.com/watch?v=...)"
+            }
             disabled={isProcessing}
             autoFocus
           />
@@ -49,7 +55,8 @@ export function VideoUploadForm({ onVideoReady }) {
           <button
             type="submit"
             className="btn-primary"
-            disabled={!urlInput.trim() || isProcessing}
+            disabled={isSubmitDisabled}
+            title={!isServerOnline ? "Waiting for backend server to wake up..." : undefined}
           >
             {isProcessing ? (
               <>
@@ -58,6 +65,14 @@ export function VideoUploadForm({ onVideoReady }) {
                   <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" />
                 </svg>
                 <span>Analyzing...</span>
+              </>
+            ) : !isServerOnline ? (
+              <>
+                <svg className="thinking-spinner" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeOpacity="0.25" />
+                  <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" />
+                </svg>
+                <span>{serverStatus === "waking" ? "Waking Server..." : "Connecting..."}</span>
               </>
             ) : (
               <>
@@ -132,7 +147,7 @@ export function VideoUploadForm({ onVideoReady }) {
               <p className="status-desc" style={{ color: "#fca5a5" }}>
                 {video.error_message || "An error occurred while transcribing or embedding the video."}
               </p>
-              <button type="button" className="btn-retry" onClick={handleRetry}>
+              <button type="button" className="btn-retry" onClick={handleRetry} disabled={!isServerOnline}>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
                 </svg>
