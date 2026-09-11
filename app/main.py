@@ -93,7 +93,7 @@ async def query_about_video(video_id: str, payload: AskRequest, db: AsyncSession
     if video.status != "ready":
         raise HTTPException(status_code=400, detail="video under processing")
 
-    route_type = route_query(payload.query)
+    route_type = await route_query(payload.query)
 
     if route_type == "summarize_video":
         if video.summary_cache:
@@ -101,8 +101,8 @@ async def query_about_video(video_id: str, payload: AskRequest, db: AsyncSession
                 answer=video.summary_cache
             )
         chunks = await retrieve_all_chunks(db, video_id)
-        batch_summaries = summarize_all_chunks(chunks)
-        final = final_summary_answer(batch_summaries)
+        batch_summaries = await summarize_all_chunks(chunks)
+        final = await final_summary_answer(batch_summaries)
 
         video.summary_cache = final
         video.summary_generated_at = datetime.now(timezone.utc)
@@ -113,7 +113,7 @@ async def query_about_video(video_id: str, payload: AskRequest, db: AsyncSession
         )
     else:
         chunks = await retrieve_relevant_chunks(db, video_id, payload.query)
-        answer = generate_answer(payload.query, chunks)
+        answer = await generate_answer(payload.query, chunks)
 
         sources = []
         for chunk in chunks:
